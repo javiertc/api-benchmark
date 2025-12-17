@@ -1,0 +1,23 @@
+{
+  "name": "blockchain-api-benchmark",
+  "version": "1.0.0",
+  "description": "Benchmark tool for testing blockchain API response times",
+  "main": "benchmark.js",
+  "type": "module",
+  "scripts": {
+    "start": "node benchmark.js",
+    "test": "node benchmark.js --iterations 10"
+  },
+  "keywords": [
+    "benchmark",
+    "blockchain",
+    "api",
+    "moralis",
+    "glacier"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "undici": "^7.16.0"
+  }
+}
