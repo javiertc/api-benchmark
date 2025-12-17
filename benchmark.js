@@ -58,9 +58,8 @@ const APIS = [
     id: "moralis",
     name: "Moralis (Avalanche)",
     requiredEnv: "MORALIS_API_KEY",
-    // FIX APPLIED: Added &limit=25 to match Glacier's pageSize
     buildUrl: (addr) =>
-      `https://deep-index.moralis.io/api/v2.2/${addr}/erc20?chain=avalanche&limit=25`,
+      `https://deep-index.moralis.io/api/v2.2/${addr}/erc20?chain=avalanche&limit=100`,
     headers: () => ({
       Accept: "application/json",
       "X-API-Key": process.env.MORALIS_API_KEY,
@@ -71,7 +70,7 @@ const APIS = [
     name: "Glacier (Avalanche C-Chain)",
     requiredEnv: "GLACIER_API_KEY",
     buildUrl: (addr) =>
-      `https://glacier-api.avax.network/v1/chains/43114/addresses/${addr}/balances:listErc20?pageSize=25`,
+      `https://glacier-api.avax.network/v1/chains/43114/addresses/${addr}/balances:listErc20?pageSize=100`,
     headers: () => ({
       Accept: "application/json",
       "x-glacier-api-key": process.env.GLACIER_API_KEY,
@@ -774,6 +773,7 @@ async function main() {
         return {
           name: api.name,
           effectiveP95: StatsCalculator.mean(runs.map((r) => r.effectiveP95)),
+          p99: StatsCalculator.mean(runs.map((r) => r.p99)),
           effectiveAvg: StatsCalculator.mean(runs.map((r) => r.effectiveAvg)),
           apdex: StatsCalculator.mean(runs.map((r) => r.apdex)),
           successRate: StatsCalculator.mean(runs.map((r) => r.successRate)),
@@ -795,9 +795,9 @@ async function main() {
       : "";
 
     console.log(
-      `  ${"API".padEnd(26)} ${"Eff P95".padEnd(10)} ${"Succ".padEnd(6)} ${
+      `  ${"API".padEnd(26)} ${"Eff P95".padEnd(10)} ${"P99".padEnd(10)} ${"Succ".padEnd(6)} ${
         hasSlo ? sloHeaders + " " : ""
-      }${"TTFB%".padEnd(7)} ${"TailTTFB%".padEnd(10)} ${"Apdex".padEnd(6)}`
+      }${"TTFB%".padEnd(7)} ${"Apdex".padEnd(6)}`
     );
     console.log(`  ${"─".repeat(98)}`);
 
@@ -831,14 +831,13 @@ async function main() {
         : "";
 
       const ttfbPct = Reporter.formatPct01(a.ttfbShareAvg).padEnd(7);
-      const tailTtfbPct = Reporter.formatPct01(a.ttfbShareP95).padEnd(10);
 
       console.log(
         `${medal} ${a.name.padEnd(26)} ${Reporter.formatMs(
           a.effectiveP95
-        ).padEnd(10)} ${succStr} ${
+        ).padEnd(10)} ${Reporter.formatMs(a.p99).padEnd(10)} ${succStr} ${
           hasSlo ? sloValues + " " : ""
-        }${ttfbPct} ${tailTtfbPct} ${apdexLabel} ${apdexStr}`
+        }${ttfbPct} ${apdexLabel} ${apdexStr}`
       );
     });
 
